@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 #  openssl_slappasswd -- OpenLDAP slappasswd(with pw-sha2)-compatible
-#                        hash generator only with openssl and shellscript
+#  hash generator and checker, only with openssl and shellscript
 #  ==========================================================
    Copyright='(C) 2018 henoheno@users.osdn.me'
    Homepage='https://ja.osdn.net/users/henoheno/'
@@ -20,7 +20,7 @@ ckname="` basename -- "$0" `"
 usage(){
   trace 'usage()' || return  # (DEBUG)
    warn "$ckname -- OpenLDAP slappasswd(with pw-sha2)-compatible"
-   warn '                hash generator only with openssl and shellscript'
+   warn 'hash generator and checker, only with openssl and shellscript'
   qwarn
   qwarn "Usage: $ckname [-h|--scheme scheme] [-s|--secret secret]"
   qwarn '       [--salt salt] [-T|--file filepath] [-n]'
