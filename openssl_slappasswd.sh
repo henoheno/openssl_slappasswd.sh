@@ -25,29 +25,36 @@ usage(){
   qwarn "Usage: $ckname [-h|--scheme scheme]"
   qwarn '       [-s|--secret secret]        [--salt salt]'
   qwarn '       [-T|--secret-file filepath] [--salt-file filepath]'
-  qwarn '       [-n]'
+  qwarn '       [--salt-random N] [-n]'
   qwarn
-  qwarn '  -h scheme, --scheme scheme'
+  qwarn "  -h 'scheme', --scheme 'scheme'"
   qwarn '        scheme(password hash scheme):'
   qwarn '            md5,  sha,  sha256,  sha384,  sha512,'
   qwarn '           smd5, ssha, ssha256, ssha384, ssha512,'
-  qwarn '            {MD5},  {SHA},  {SHA256},  {SHA384},  {SHA512},'
-  qwarn '           {SMD5}, {SSHA}, {SSHA256}, {SSHA384}, {SSHA512}'
+  qwarn "            '{MD5}',  '{SHA}',  '{SHA256}',  '{SHA384}',  '{SHA512}',"
+  qwarn "           '{SMD5}', '{SSHA}', '{SSHA256}', '{SSHA384}', '{SSHA512}'"
   qwarn "           (default: '{SSHA256}')"
-  qwarn "           You can put '{SCHEME}base64-encoded-hash-and-salt' to verify"
   qwarn
-  qwarn '  -s secret, --secret secret'
+  qwarn "  -s 'secret', --secret 'secret'"
   qwarn '        passphrase or secret'
-  qwarn '  -T filepath, --secret-file filepath'
+  qwarn "  -T 'filepath', --secret-file 'filepath'"
   qwarn '        use entire file content for secret'
   qwarn
-  qwarn '  --salt salt'
-  qwarn '        specify salt for smd5, ssha, ssha256, ssha384, ssha512'
-  qwarn '        (default: random 8 bytes)'
-  qwarn '  --salt-file filepath'
+  qwarn "  --salt 'salt'"
+  qwarn '        specify salt text for smd5, ssha, ssha256, ssha384, ssha512'
+  qwarn "  --salt-file 'filepath'"
   qwarn '        use entire file content for salt'
+  qwarn '  --salt-random N'
+  qwarn '        specify random salt length (default:8 bytes)'
+  qwarn "  --scheme '{SCHEME}base64-encoded-hash-and-salt'"
+  qwarn '        specify salt'
   qwarn
   qwarn '  -n    omit trailing newline'
+  qwarn
+  qwarn "  -h       '{SCHEME}base64-encoded-hash-and-salt',"
+  qwarn "  --scheme '{SCHEME}base64-encoded-hash-and-salt'"
+  qwarn "        verify userPassword and return true if that seems verified"
+  qwarn "        with the secret and salt"
   qwarn
   qwarn 'Examples:'
   qwarn "  $ $ckname --secret pass --scheme ssha256"
@@ -106,6 +113,8 @@ getopt(){ _arg=noarg
   -T|--fi|--fil|--file|--secret-f|--secret-fi|--secret-fil|--secret-file )
     echo _file 2 ; _arg="$2" ;;
   --salt-f|--salt-fi|--salt-fil|--salt-file ) echo _sfile 2 ; _arg="$2" ;;
+  --salt-r|--salt-ra|--salt-ran|--salt-rand|--salt-rando|--salt-random )
+    echo _srand 2; _arg="$2" ;;
   -n|--omit-the-trailing-newline ) echo _nonewline ;;
 
    # Do nothing, compatibility only
@@ -181,11 +190,12 @@ while [ $# -gt 0 ] ; do
    ## Double Options
    _scheme ) _scheme="$2" ;;
 
-   _secret ) _secret="$2" ; _file=   ;; # Exclusive  _secret -o _file
-   _file   ) _file="$2"   ; _secret= ;; #
+   _secret ) _secret="$2" ; _file=   ;; # Exclusive
+   _file   ) _file="$2"   ; _secret= ;; # _secret or _file
 
-   _salt   ) _salt="$2"   ; _sfile=  ;; # Exclusive _salt -o _sfile
-   _sfile  ) _sfile="$2"  ; _salt=   ;; #
+   _salt   ) _salt="$2"   ; _sfile=  ; _srand= ;; # Exclusive
+   _sfile  ) _sfile="$2"  ; _salt=   ; _srand= ;; # _salt or _sfile or _srand
+   _srand  ) _srand="$2"  ; _sfile=  ; _salt=  ;; #
 
    _*      ) shift ;; ## Preparsed or NOP
 
@@ -243,6 +253,7 @@ _openssl_slappasswd()
   salt="$3"
   file="$4"
   sfile="$5"
+  srand="$6"
   case "$scheme" in
     '{'[a-zA-Z0-9./_-][a-zA-Z0-9./_-]*'}'* )
       scheme="` echo "$1" | sed 's#^\({[a-zA-Z0-9./_-][a-zA-Z0-9./_-]*}\).*#\1#' | tr A-Z a-z | tr -d '{}' `"
@@ -260,6 +271,7 @@ _openssl_slappasswd()
     warn "file=$file"
     warn "salt=$salt"
     warn "sfile=$sfile"
+    warn "srand=$srand"
   fi
 
   algo= ; l= ; prefix=
@@ -276,6 +288,12 @@ _openssl_slappasswd()
        smd5 ) algo='-md5'   ; l=17; prefix='{SMD5}'   ;;
         md5 ) algo='-md5'   ; l=  ; prefix='{MD5}'    ;;
     * ) warn "Non-supported scheme: $scheme" ; return 1 ;;
+  esac
+
+  case "$srand" in
+    '' ) srand=8 ;;
+    [0-9] | [0-9][0-9] | [0-9][0-9][0-9] | [0-9][0-9][0-9][0-9] ) ;; # 0000 seems OK
+    * ) srand=8 ;;
   esac
 
   # <- Binary-friendry way but maybe slow:
@@ -303,8 +321,8 @@ _openssl_slappasswd()
              echo -n "$hash" | openssl enc -d -base64 -A | tail -c "+$l" >  "$tmp_salt" # [O]
             #echo -n "$hash" | openssl enc -d -base64 -A | cut  -b "$l-" >  "$tmp_salt" # [X]
           else
-            dwarn "Salt: random"
-            openssl rand 8 > "$tmp_salt"
+            dwarn "Salt: random $srand bytes"
+            openssl rand "$srand" > "$tmp_salt"
           fi
           sfile="$tmp_salt"
         fi
@@ -330,14 +348,14 @@ _openssl_slappasswd()
   }
   case "$scheme" in
     ssha* | smd5* ) openssl_file2hash "$algo" "$file" "$sfile" ;;
-    *             ) openssl_file2hash "$algo" "$file"           ;;
+    *             ) openssl_file2hash "$algo" "$file"          ;;
   esac
 
   rm -f "$tmp_payload" "$tmp_salt"
   # -> Binary-friendry way
 }
 
-result="` _openssl_slappasswd "$_scheme" "$_secret" "$_salt" "$_file" "$_sfile" `" && {
+result="` _openssl_slappasswd "$_scheme" "$_secret" "$_salt" "$_file" "$_sfile" "$_srand" `" && {
   if [ "$__nonewline" ]
     then echo -n "$result"
     else echo    "$result"
