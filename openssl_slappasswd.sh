@@ -320,8 +320,10 @@ _openssl_slappasswd()
   # -> Binary-friendry way
 }
 
-_openssl_slappasswd "$_scheme" "$_secret" "$_salt" "$_file" && {
-  if [ ! "$__nonewline" ] ; then
-     echo
+result="` _openssl_slappasswd "$_scheme" "$_secret" "$_salt" "$_file" `" && {
+  if [ "$__nonewline" ]
+    then echo -n "$result"
+    else echo    "$result"
   fi
+  test "x$_scheme" = "x$result"
 }
