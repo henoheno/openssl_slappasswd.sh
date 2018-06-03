@@ -44,7 +44,7 @@ usage(){
   qwarn '        specify salt text for smd5, ssha, ssha256, ssha384, ssha512'
   qwarn "  --salt-file 'filepath'"
   qwarn '        use entire file content for salt'
-  qwarn '  --salt-random N'
+  qwarn '  --salt-random N|NN|NNN|NNNN'
   qwarn '        specify random salt length (default:8 bytes)'
   qwarn "  --scheme '{SCHEME}base64-encoded-hash-and-salt'"
   qwarn '        specify salt'
