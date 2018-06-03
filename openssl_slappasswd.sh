@@ -293,7 +293,7 @@ _openssl_slappasswd()
   case "$srand" in
     '' ) srand=8 ;;
     [0-9] | [0-9][0-9] | [0-9][0-9][0-9] | [0-9][0-9][0-9][0-9] ) ;; # 0000 seems OK
-    * ) srand=8 ;;
+    *  ) srand=8 ;;
   esac
 
   # <- Binary-friendry way but maybe slow:
