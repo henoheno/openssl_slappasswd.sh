@@ -6,10 +6,10 @@ Usage: openssl_slappasswd.sh [-h|--scheme scheme] [-s|--secret secret]
 
   -h scheme, --scheme scheme
         scheme(password hash scheme):
-           md5,  sha1,  sha256,  sha384,  sha512,
-           smd5, ssha1, ssha256, ssha384, ssha512,
-           {MD5},  {SHA1},  {SHA256},  {SHA384},  {SHA512},
-           {SMD5}, {SSHA1}, {SSHA256}, {SSHA384}, {SSHA512}
+           md5,  sha,  sha256,  sha384,  sha512,
+           smd5, ssha, ssha256, ssha384, ssha512,
+           {MD5},  {SHA},  {SHA256},  {SHA384},  {SHA512},
+           {SMD5}, {SSHA}, {SSHA256}, {SSHA384}, {SSHA512}
            (default: '{SSHA256}')
            You can put '{SCHEME}base64-encoded-hash-and-salt' to verify
 
@@ -20,7 +20,7 @@ Usage: openssl_slappasswd.sh [-h|--scheme scheme] [-s|--secret secret]
         use entire file contents for secret
 
   --salt salt
-        specify salt for smd5, ssha1, ssha256, ssha384, ssha512
+        specify salt for smd5, ssha, ssha256, ssha384, ssha512
         (default: random 8 bytes)
 
   -n    omit trailing newline
