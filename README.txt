@@ -1,5 +1,5 @@
 openssl_slappasswd.sh -- OpenLDAP slappasswd(with pw-sha2)-compatible
-                hash generator only with openssl, sed, tail, tr, sh
+                hash generator only with openssl and shellscript
 
 Usage: openssl_slappasswd.sh [-h scheme] [-s secret]
        [--salt salt] [-n]
