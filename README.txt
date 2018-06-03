@@ -1,27 +1,30 @@
 openssl_slappasswd.sh -- OpenLDAP slappasswd(with pw-sha2)-compatible
 hash generator and checker, only with openssl and shellscript
 
-Usage: openssl_slappasswd.sh [-h|--scheme scheme] [-s|--secret secret]
-       [--salt salt] [-T|--file filepath] [-n]
+Usage: openssl_slappasswd.sh [-h|--scheme scheme]
+       [-s|--secret secret]        [--salt salt]
+       [-T|--secret-file filepath] [--salt-file filepath]
+       [-n]
 
   -h scheme, --scheme scheme
         scheme(password hash scheme):
-           md5,  sha,  sha256,  sha384,  sha512,
+            md5,  sha,  sha256,  sha384,  sha512,
            smd5, ssha, ssha256, ssha384, ssha512,
-           {MD5},  {SHA},  {SHA256},  {SHA384},  {SHA512},
+            {MD5},  {SHA},  {SHA256},  {SHA384},  {SHA512},
            {SMD5}, {SSHA}, {SSHA256}, {SSHA384}, {SSHA512}
            (default: '{SSHA256}')
            You can put '{SCHEME}base64-encoded-hash-and-salt' to verify
 
   -s secret, --secret secret
         passphrase or secret
-
-  -T filepath, --file filepath
-        use entire file contents for secret
+  -T filepath, --secret-file filepath
+        use entire file content for secret
 
   --salt salt
         specify salt for smd5, ssha, ssha256, ssha384, ssha512
         (default: random 8 bytes)
+  --salt-file filepath
+        use entire file content for salt
 
   -n    omit trailing newline
 
