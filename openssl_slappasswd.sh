@@ -22,27 +22,30 @@ usage(){
    warn "$ckname -- OpenLDAP slappasswd(with pw-sha2)-compatible"
    warn 'hash generator and checker, only with openssl and shellscript'
   qwarn
-  qwarn "Usage: $ckname [-h|--scheme scheme] [-s|--secret secret]"
-  qwarn '       [--salt salt] [-T|--file filepath] [-n]'
+  qwarn "Usage: $ckname [-h|--scheme scheme]"
+  qwarn '       [-s|--secret secret]        [--salt salt]'
+  qwarn '       [-T|--secret-file filepath] [--salt-file filepath]'
+  qwarn '       [-n]'
   qwarn
   qwarn '  -h scheme, --scheme scheme'
   qwarn '        scheme(password hash scheme):'
-  qwarn '           md5,  sha,  sha256,  sha384,  sha512,'
+  qwarn '            md5,  sha,  sha256,  sha384,  sha512,'
   qwarn '           smd5, ssha, ssha256, ssha384, ssha512,'
-  qwarn '           {MD5},  {SHA},  {SHA256},  {SHA384},  {SHA512},'
+  qwarn '            {MD5},  {SHA},  {SHA256},  {SHA384},  {SHA512},'
   qwarn '           {SMD5}, {SSHA}, {SSHA256}, {SSHA384}, {SSHA512}'
   qwarn "           (default: '{SSHA256}')"
   qwarn "           You can put '{SCHEME}base64-encoded-hash-and-salt' to verify"
   qwarn
   qwarn '  -s secret, --secret secret'
   qwarn '        passphrase or secret'
-  qwarn
-  qwarn '  -T filepath, --file filepath'
-  qwarn '        use entire file contents for secret'
+  qwarn '  -T filepath, --secret-file filepath'
+  qwarn '        use entire file content for secret'
   qwarn
   qwarn '  --salt salt'
   qwarn '        specify salt for smd5, ssha, ssha256, ssha384, ssha512'
   qwarn '        (default: random 8 bytes)'
+  qwarn '  --salt-file filepath'
+  qwarn '        use entire file content for salt'
   qwarn
   qwarn '  -n    omit trailing newline'
   qwarn
@@ -100,7 +103,9 @@ getopt(){ _arg=noarg
   # Grobal and Local options for slappasswd
   -h|--sc|--sch|--sche|--schem|--scheme        ) echo _scheme 2 ; _arg="ALLOWEMPTY" ;;
   -s|--se|--sec|--secr|--secr|--secre|--secret ) echo _secret 2 ; _arg="$2" ;;
-  -T|--fi|--fil|--file ) echo _file 2 ; _arg="$2" ;;
+  -T|--fi|--fil|--file|--secret-f|--secret-fi|--secret-fil|--secret-file )
+    echo _file 2 ; _arg="$2" ;;
+  --salt-f|--salt-fi|--salt-fil|--salt-file ) echo _sfile 2 ; _arg="$2" ;;
   -n|--omit-the-trailing-newline ) echo _nonewline ;;
 
    # Do nothing, compatibility only
@@ -154,7 +159,7 @@ case '--debug' in "$1"|"$3") false ;; * ) true ;; esac || {
 
 # No argument (slappasswd compatible way)
 if [ $# -eq 0 ] ; then
-  _scheme= ; _secret= ; _salt= ; _file=
+  _scheme= ; _secret= ; _salt= ; _file= ; _sfile=
 fi
 
 # Preparse
@@ -174,10 +179,13 @@ while [ $# -gt 0 ] ; do
     _version ) version   ;;
 
    ## Double Options
-   _secret ) _secret="$2" ; _file=   ;;
-   _file   ) _file="$2"   ; _secret= ;;
    _scheme ) _scheme="$2" ;;
-   _salt   ) _salt="$2"   ;;
+
+   _secret ) _secret="$2" ; _file=   ;; # Exclusive  _secret -o _file
+   _file   ) _file="$2"   ; _secret= ;; #
+
+   _salt   ) _salt="$2"   ; _sfile=  ;; # Exclusive _salt -o _sfile
+   _sfile  ) _sfile="$2"  ; _salt=   ;; #
 
    _*      ) shift ;; ## Preparsed or NOP
 
@@ -234,6 +242,7 @@ _openssl_slappasswd()
   secret="$2"
   salt="$3"
   file="$4"
+  sfile="$5"
   case "$scheme" in
     '{'[a-zA-Z0-9./_-][a-zA-Z0-9./_-]*'}'* )
       scheme="` echo "$1" | sed 's#^\({[a-zA-Z0-9./_-][a-zA-Z0-9./_-]*}\).*#\1#' | tr A-Z a-z | tr -d '{}' `"
@@ -248,8 +257,9 @@ _openssl_slappasswd()
     warn "scheme=$scheme"
     warn "hash=$hash"
     warn "secret=$secret"
-    warn "file=$_file"
+    warn "file=$file"
     warn "salt=$salt"
+    warn "sfile=$sfile"
   fi
 
   algo= ; l= ; prefix=
@@ -270,7 +280,7 @@ _openssl_slappasswd()
 
   # <- Binary-friendry way but maybe slow:
   #    You know if your /tmp is on the memory or not
-  tmp_header="/tmp/tmp_$$_` openssl rand -hex 8 `"
+  tmp_header="/tmp/tmp_$$_` openssl rand -hex 15 `"
   tmp_payload="${tmp_header}_payload.bin"
      tmp_salt="${tmp_header}_salt.bin"
   trap 'rm -f "$tmp_payload" "$tmp_salt"' 1 3 4 6 10 15
@@ -281,46 +291,53 @@ _openssl_slappasswd()
       then
         dwarn "Salt: --salt '$salt'"
         echo -n "$salt"  > "$tmp_salt"
+        sfile="$tmp_salt"
       else
-        if [ 'xx' != "x${hash}x" ]
+        if [ 'x' != "x$sfile" -a -f "$sfile" ]
         then
-          dwarn "Salt: from hash"
-           echo -n "$hash" | openssl enc -d -base64 -A | tail -c "+$l" >  "$tmp_salt" # [O]
-          #echo -n "$hash" | openssl enc -d -base64 -A | cut  -b "$l-" >  "$tmp_salt" # [X]
+          dwarn "Salt: --salt-file '$sfile'"
         else
-          dwarn "Salt: random"
-          openssl rand 8 > "$tmp_salt"
+          if [ 'xx' != "x${hash}x" ]
+          then
+            dwarn "Salt: from hash"
+             echo -n "$hash" | openssl enc -d -base64 -A | tail -c "+$l" >  "$tmp_salt" # [O]
+            #echo -n "$hash" | openssl enc -d -base64 -A | cut  -b "$l-" >  "$tmp_salt" # [X]
+          else
+            dwarn "Salt: random"
+            openssl rand 8 > "$tmp_salt"
+          fi
+          sfile="$tmp_salt"
         fi
       fi
     ;;
   esac
 
-  if [ 'x' = "x$_file" -o ! -f "$_file" ] ; then
+  if [ 'x' = "x$file" -o ! -f "$file" ] ; then
     echo -n "$secret" > "$tmp_payload"
-    _file="$tmp_payload"
+    file="$tmp_payload"
   fi
 
   echo -n "$prefix"
 
   openssl_file2hash(){
     algo="$1" ; shift
-    _sfile="$2" # salt.bin
-    if [ 'x' = "x$_sfile" -o ! -f "$_sfile" ]
+    sfile="$2" # salt.bin
+    if [ 'x' = "x$sfile" -o ! -f "$sfile" ]
     then cat "$@" | openssl dgst "$algo" -binary | openssl enc -base64 -A
     else cat "$@" | openssl dgst "$algo" -binary |
-                               cat - "$tmp_salt" | openssl enc -base64 -A
+                                 cat - "$sfile" | openssl enc -base64 -A
     fi
   }
   case "$scheme" in
-    ssha* | smd5* ) openssl_file2hash "$algo" "$_file" "$tmp_salt" ;;
-    *             ) openssl_file2hash "$algo" "$_file"             ;;
+    ssha* | smd5* ) openssl_file2hash "$algo" "$file" "$sfile" ;;
+    *             ) openssl_file2hash "$algo" "$file"           ;;
   esac
 
   rm -f "$tmp_payload" "$tmp_salt"
   # -> Binary-friendry way
 }
 
-result="` _openssl_slappasswd "$_scheme" "$_secret" "$_salt" "$_file" `" && {
+result="` _openssl_slappasswd "$_scheme" "$_secret" "$_salt" "$_file" "$_sfile" `" && {
   if [ "$__nonewline" ]
     then echo -n "$result"
     else echo    "$result"
