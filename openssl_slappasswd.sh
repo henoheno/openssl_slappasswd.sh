@@ -27,10 +27,10 @@ usage(){
   qwarn
   qwarn '  -h scheme, --scheme scheme'
   qwarn '        scheme(password hash scheme):'
-  qwarn '           md5,  sha1,  sha256,  sha384,  sha512,'
-  qwarn '           smd5, ssha1, ssha256, ssha384, ssha512,'
-  qwarn '           {MD5},  {SHA1},  {SHA256},  {SHA384},  {SHA512},'
-  qwarn '           {SMD5}, {SSHA1}, {SSHA256}, {SSHA384}, {SSHA512}'
+  qwarn '           md5,  sha,  sha256,  sha384,  sha512,'
+  qwarn '           smd5, ssha, ssha256, ssha384, ssha512,'
+  qwarn '           {MD5},  {SHA},  {SHA256},  {SHA384},  {SHA512},'
+  qwarn '           {SMD5}, {SSHA}, {SSHA256}, {SSHA384}, {SSHA512}'
   qwarn "           (default: '{SSHA256}')"
   qwarn "           You can put '{SCHEME}base64-encoded-hash-and-salt' to verify"
   qwarn
@@ -41,7 +41,7 @@ usage(){
   qwarn '        use entire file contents for secret'
   qwarn
   qwarn '  --salt salt'
-  qwarn '        specify salt for smd5, ssha1, ssha256, ssha384, ssha512'
+  qwarn '        specify salt for smd5, ssha, ssha256, ssha384, ssha512'
   qwarn '        (default: random 8 bytes)'
   qwarn
   qwarn '  -n    omit trailing newline'
@@ -262,7 +262,7 @@ _openssl_slappasswd()
     ssha512 ) algo='-sha512'; l=65; prefix='{SSHA512}';;
      sha512 ) algo='-sha512'; l=  ; prefix='{SHA512}' ;;
        ssha ) algo='-sha1'  ; l=21; prefix='{SSHA}'   ;; # Not -sha
-       sha1 ) algo='-sha1'  ; l=  ; prefix='{SHA}'    ;; # Not -sha
+        sha ) algo='-sha1'  ; l=  ; prefix='{SHA}'    ;; # Not -sha
        smd5 ) algo='-md5'   ; l=17; prefix='{SMD5}'   ;;
         md5 ) algo='-md5'   ; l=  ; prefix='{MD5}'    ;;
     * ) warn "Non-supported scheme: $scheme" ; return 1 ;;
