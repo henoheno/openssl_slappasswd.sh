@@ -17,17 +17,18 @@ asserequals()
 }
 
 # ----------------------------------------
+title='Exclusive options: Salt from'
 command="./openssl_slappasswd.sh --debug --scheme smd5 --secret s"
-asserequals 'Exclusive options:' '--salt' \
+asserequals "$title" '--salt' \
   "` $command --salt-file ./README.txt --salt-random 1 --salt s 2>&1 | grep Salt: | cut -d ' ' -f 3 `"
-asserequals 'Exclusive options:' '--salt-random' \
+asserequals "$title" '--salt-random' \
   "` $command --salt s --salt-file ./README.txt --salt-random 1 2>&1 | grep Salt: | cut -d ' ' -f 3 `"
-asserequals 'Exclusive options:' '--salt-file' \
+asserequals "$title" '--salt-file' \
   "` $command --salt-random 1 --salt s --salt-file ./README.txt 2>&1 | grep Salt: | cut -d ' ' -f 3 `"
 
-asserequals 'Exclusive options:' '--scheme' \
+asserequals "$title" '--scheme' \
   "` $command --scheme '{SMD5}!' --salt-random 1 --salt s --salt-file ./README.txt 2>&1 | grep Salt: | cut -d ' ' -f 3 `"
-asserequals 'Exclusive options:' '--salt-file' \
+asserequals "$title" '--salt-file' \
   "` $command --scheme '{SMD5}' --salt-random 1 --salt s --salt-file ./README.txt 2>&1 | grep Salt: | cut -d ' ' -f 3 `"
 
 # ----------------------------------------
