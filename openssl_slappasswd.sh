@@ -195,10 +195,10 @@ while [ $# -gt 0 ] ; do
    _scheme ) _scheme="$2" ;;
 
    _secret ) _secret="$2" ; _file=   ;; # Exclusive
-   _file   ) _file="$2"   ; _secret= ;; # _secret or _file
+   _file   ) _file="$2"   ; _secret= ;; #
 
    _salt   ) _salt="$2"   ; _sfile=  ; _srand= ;; # Exclusive
-   _sfile  ) _sfile="$2"  ; _salt=   ; _srand= ;; # _salt or _sfile or _srand
+   _sfile  ) _sfile="$2"  ; _salt=   ; _srand= ;; #
    _srand  ) _srand="$2"  ; _sfile=  ; _salt=  ;; #
 
    _*      ) shift ;; ## Preparsed or NOP
@@ -314,16 +314,16 @@ _openssl_slappasswd()
   fi
 
   case "$scheme" in ssha* | smd5* )
-    if [ 'xx' != "x${salt}x" ] ; then
-      dwarn "Salt: --salt '$salt'"
-      echo -n "$salt"  > "$tmp_salt"
-      sfile="$tmp_salt"
-    elif [ 'x' != "x$sfile" -a -f "$sfile" ] ; then
-      dwarn "Salt: --salt-file '$sfile'"
-    elif [ 'xx' != "x${hash}x" ] ; then
+    if [ 'xx' != "x${hash}x" ] ; then
       dwarn "Salt: from hash"
       echo -n "$hash" | openssl enc -d -base64 -A | tail -c "+$l" >  "$tmp_salt" # [O]
      #echo -n "$hash" | openssl enc -d -base64 -A | cut  -b "$l-" >  "$tmp_salt" # [X]
+      sfile="$tmp_salt"
+    elif [ 'x' != "x$sfile" -a -f "$sfile" ] ; then
+      dwarn "Salt: --salt-file '$sfile'"
+    elif [ 'xx' != "x${salt}x" ] ; then
+      dwarn "Salt: --salt '$salt'"
+      echo -n "$salt"  > "$tmp_salt"
       sfile="$tmp_salt"
     else
       dwarn "Salt: random $srand bytes"
@@ -338,9 +338,11 @@ _openssl_slappasswd()
     vwarn "sfile=$sfile"
   fi
 
-  openssl_file2hash(){
-    algo="$1" ; shift
-    sfile="$2" # salt.bin
+  openssl_file2hash()
+  {
+    algo="$1"
+    sfile="$3" # salt.bin
+    shift
     if [ 'x' = "x$sfile" -o ! -f "$sfile" ]
     then cat "$@" | openssl dgst "$algo" -binary | openssl enc -base64 -A
     else cat "$@" | openssl dgst "$algo" -binary |
