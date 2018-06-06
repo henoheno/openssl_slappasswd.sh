@@ -94,7 +94,11 @@ version(){
 
 # Prerequisites ---------------------------------------------
 
-# openssl commnad
+for target in openssl sed tail tr ; do
+  if ! which "$target" 1>/dev/null 2>&1 ; then
+    warn "Command not found: $target" ; exit 1
+  fi
+done
 
 # Default variables -----------------------------------------
 
@@ -234,20 +238,6 @@ fi
 
 _openssl_slappasswd()
 {
-  if [ 'x' != "$__debug" ]
-  then base='_openssl_slappasswd(): '
-  else base=
-  fi
-  warn(){  echo "$base$*" 1>&2 ; }
-  dwarn(){ test 'x' != "x$__debug"   && warn "$*" ; }
-
-  # Prerequisites: openssl command
-  for target in openssl sed tail ; do
-    if ! which "$target" 1>/dev/null 2>&1 ; then
-      warn "Command not found: $target" ; exit 1
-    fi
-  done
-
   scheme="$1"
   secret="$2"
   salt="$3"
@@ -255,10 +245,20 @@ _openssl_slappasswd()
   sfile="$5"
   srand="$6"
 
+  if [ 'x' != "$__debug" ]
+  then base='_openssl_slappasswd(): '
+  else base=
+  fi
+  warn(){  echo "$base$*" 1>&2 ; }
+  dwarn(){ test 'x' != "x$__debug"   && warn "$*" ; }
+
   case "$scheme" in
     '{'[a-zA-Z0-9./_-][a-zA-Z0-9./_-]*'}'* )
-      scheme="` echo "$1" | sed 's#^\({[a-zA-Z0-9./_-][a-zA-Z0-9./_-]*}\).*#\1#' | tr A-Z a-z | tr -d '{}' `"
-      hash="`   echo "$1" | sed   's#^{[a-zA-Z0-9./_-][a-zA-Z0-9./_-]*}##' `"
+      scheme="` echo "$1" | sed -e 's#^\({[a-zA-Z0-9./_-][a-zA-Z0-9./_-]*}\).*#\1#' | tr A-Z a-z | tr -d '{}' `"
+      hash="`   echo "$1" | sed -e   's#^{[a-zA-Z0-9./_-][a-zA-Z0-9./_-]*}##' `"
+      if [ 'x' != "x$hash" ] ; then
+        srand=  ; sfile=  ; salt=  # Exclusive
+      fi
     ;;
     * )
       scheme="` echo "$1" | tr A-Z a-z `"
@@ -344,7 +344,7 @@ _openssl_slappasswd()
     if [ 'x' = "x$sfile" -o ! -f "$sfile" ]
     then cat "$@" | openssl dgst "$algo" -binary | openssl enc -base64 -A
     else cat "$@" | openssl dgst "$algo" -binary |
-                                 cat - "$sfile" | openssl enc -base64 -A
+                                  cat - "$sfile" | openssl enc -base64 -A
     fi
   }
   echo -n "$prefix"
