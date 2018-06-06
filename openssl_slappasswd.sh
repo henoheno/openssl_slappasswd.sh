@@ -313,9 +313,13 @@ _openssl_slappasswd()
    vwarn "tmp_salt=$tmp_salt"
   fi
 
-  if [ 'x' = "x$file" -o ! -f "$file" ] ; then
+  if [ 'x' = "x$file" -o ! -f "$file" ]
+  then
+    dwarn "Secret: --secret"
     echo -n "$secret" > "$tmp_payload"
     file="$tmp_payload"
+  else
+    dwarn "Secret: --secret-file"
   fi
 
   case "$scheme" in ssha* | smd5* )

@@ -17,6 +17,18 @@ assertequals()
 }
 
 # ----------------------------------------
+title='Exclusive options: Secret from'
+
+_test()
+{
+  ./openssl_slappasswd.sh --debug --scheme md5 --secret s "$@" 2>&1 |
+     grep Secret: | cut -d ' ' -f 3
+}
+base="--secret-file ./README.txt --secret secret"
+assertequals "$title" '--secret'      "` _test $base --secret secret `"
+assertequals "$title" '--secret-file' "` _test $base --secret-file README.txt `"
+
+# ----------------------------------------
 title='Exclusive options: Salt from'
 
 _test()
