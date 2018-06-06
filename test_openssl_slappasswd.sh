@@ -2,13 +2,40 @@
 # test script for openssl_slappasswd.sh
 #
 
-function _test() {
-  scheme="$1"
-  result="` ./openssl_slappasswd.sh --secret "$secret" --scheme "$scheme" -n `"
-  if [ "x$scheme" = "x$result" ]
-    then echo "ok: $title $scheme"
-    else echo "NG: $title $scheme"
+# ----------------------------------------
+
+asserequals()
+{
+  title="$1"
+  expected="$2"
+  actual="$3"
+  message="$*"
+  if [ "x$expected" = "x$actual" ]
+    then echo "ok: $title $expected"
+    else echo "NG: $title expected: $expected but was: $actual"
   fi
+}
+
+# ----------------------------------------
+command="./openssl_slappasswd.sh --debug --scheme smd5 --secret s"
+asserequals 'Exclusive options:' '--salt' \
+  "` $command --salt-file ./README.txt --salt-random 1 --salt s 2>&1 | grep Salt: | cut -d ' ' -f 3 `"
+asserequals 'Exclusive options:' '--salt-random' \
+  "` $command --salt s --salt-file ./README.txt --salt-random 1 2>&1 | grep Salt: | cut -d ' ' -f 3 `"
+asserequals 'Exclusive options:' '--salt-file' \
+  "` $command --salt-random 1 --salt s --salt-file ./README.txt 2>&1 | grep Salt: | cut -d ' ' -f 3 `"
+
+asserequals 'Exclusive options:' '--scheme' \
+  "` $command --scheme '{SMD5}!' --salt-random 1 --salt s --salt-file ./README.txt 2>&1 | grep Salt: | cut -d ' ' -f 3 `"
+asserequals 'Exclusive options:' '--salt-file' \
+  "` $command --scheme '{SMD5}' --salt-random 1 --salt s --salt-file ./README.txt 2>&1 | grep Salt: | cut -d ' ' -f 3 `"
+
+# ----------------------------------------
+_test()
+{
+  scheme="$1"
+  asserequals "$title" "$scheme" \
+    "` ./openssl_slappasswd.sh --secret "$secret" --scheme "$scheme" -n `"
 }
 
 title=openssl_slappasswd.sh
@@ -41,7 +68,6 @@ _test '{SHA512}pnvx1FlNK39PbQ7un1LRu3zeiuN3NaS/3zKxumpoiFS5S4m5AKcqDrTKtx0j/Ado6
 _test '{SSHA256}XKnGee0csI1FNLTZdIjhXgLR690UJv9XSfVozYQLgRIfHbi5EkrPaA=='
 _test '{SSHA384}lqwDJ57bh4yXnb7ED+l2mS74Vm8PgJZK1VlcUi7CypJLujqwFjpvqNdQTpttPJ0wrW4JbsugjuI='
 _test '{SSHA512}sQMko4CUJKuwQyY9cqJdghty4GdsZXJGniXa/aIu67ACT1k49xuXqkMXvO8cE5VpfmB8Be073gKbc/4/KhXlinzFVlNtgNRx'
-
 title=slappasswd-dynamic
 secret=slappasswd-dynamic
 alias slappasswd="slappasswd -o module-path=/usr/lib64/openldap -o module-load=pw-sha2"
@@ -56,4 +82,4 @@ _test "` slappasswd -h '{SSHA256}' -s "$secret" `"
 _test "` slappasswd -h '{SSHA384}' -s "$secret" `"
 _test "` slappasswd -h '{SSHA512}' -s "$secret" `"
 
-
+# ----------------------------------------

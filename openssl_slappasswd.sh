@@ -315,7 +315,7 @@ _openssl_slappasswd()
 
   case "$scheme" in ssha* | smd5* )
     if [ 'xx' != "x${hash}x" ] ; then
-      dwarn "Salt: from hash"
+      dwarn "Salt: --scheme"
       echo -n "$hash" | openssl enc -d -base64 -A | tail -c "+$l" >  "$tmp_salt" # [O]
      #echo -n "$hash" | openssl enc -d -base64 -A | cut  -b "$l-" >  "$tmp_salt" # [X]
       sfile="$tmp_salt"
@@ -326,7 +326,7 @@ _openssl_slappasswd()
       echo -n "$salt"  > "$tmp_salt"
       sfile="$tmp_salt"
     else
-      dwarn "Salt: random $srand bytes"
+      dwarn "Salt: --salt-random $srand"
       openssl rand "$srand" > "$tmp_salt"
       sfile="$tmp_salt"
     fi
