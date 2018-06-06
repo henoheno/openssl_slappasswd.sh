@@ -254,6 +254,7 @@ _openssl_slappasswd()
   file="$4"
   sfile="$5"
   srand="$6"
+
   case "$scheme" in
     '{'[a-zA-Z0-9./_-][a-zA-Z0-9./_-]*'}'* )
       scheme="` echo "$1" | sed 's#^\({[a-zA-Z0-9./_-][a-zA-Z0-9./_-]*}\).*#\1#' | tr A-Z a-z | tr -d '{}' `"
@@ -264,15 +265,11 @@ _openssl_slappasswd()
       hash=
     ;;
   esac
-  if [ 'x' != "x$__debug" ] ; then
-    warn "scheme=$scheme"
-    warn "hash=$hash"
-    warn "secret=$secret"
-    warn "file=$file"
-    warn "salt=$salt"
-    warn "sfile=$sfile"
-    warn "srand=$srand"
-  fi
+
+  case "$srand" in
+    [0-9] | [0-9][0-9] | [0-9][0-9][0-9] | [0-9][0-9][0-9][0-9] ) ;; # 0000 seems OK
+    *  ) srand=8 ;;
+  esac
 
   algo= ; l= ; prefix=
   case "$scheme" in
@@ -290,51 +287,56 @@ _openssl_slappasswd()
     * ) warn "Non-supported scheme: $scheme" ; return 1 ;;
   esac
 
-  case "$srand" in
-    [0-9] | [0-9][0-9] | [0-9][0-9][0-9] | [0-9][0-9][0-9][0-9] ) ;; # 0000 seems OK
-    *  ) srand=8 ;;
-  esac
-
-  # <- Binary-friendry way but maybe slow:
+  # <- Binary-friendly way but maybe slow:
   #    You know if your /tmp is on the memory or not
   tmp_header="/tmp/tmp_$$_` openssl rand -hex 15 `"
   tmp_payload="${tmp_header}_payload.bin"
      tmp_salt="${tmp_header}_salt.bin"
   trap 'rm -f "$tmp_payload" "$tmp_salt"' 1 3 4 6 10 15
 
-  case "$scheme" in
-    ssha* | smd5* )
-      if [ 'xx' != "x${salt}x" ]
-      then
-        dwarn "Salt: --salt '$salt'"
-        echo -n "$salt"  > "$tmp_salt"
-        sfile="$tmp_salt"
-      else
-        if [ 'x' != "x$sfile" -a -f "$sfile" ]
-        then
-          dwarn "Salt: --salt-file '$sfile'"
-        else
-          if [ 'xx' != "x${hash}x" ]
-          then
-            dwarn "Salt: from hash"
-             echo -n "$hash" | openssl enc -d -base64 -A | tail -c "+$l" >  "$tmp_salt" # [O]
-            #echo -n "$hash" | openssl enc -d -base64 -A | cut  -b "$l-" >  "$tmp_salt" # [X]
-          else
-            dwarn "Salt: random $srand bytes"
-            openssl rand "$srand" > "$tmp_salt"
-          fi
-          sfile="$tmp_salt"
-        fi
-      fi
-    ;;
-  esac
+  if [ 'x' != "x$__debug" ] ; then
+    warn "scheme=$scheme"
+    warn "hash=$hash"
+    warn "secret=$secret"
+    warn "file=$file"
+    warn "salt=$salt"
+    warn "sfile=$sfile"
+    warn "algo=$algo"
+    warn "l=$l"
+    warn "prefix=$prefix"
+   vwarn "tmp_payload=$tmp_payload"
+   vwarn "tmp_salt=$tmp_salt"
+  fi
 
   if [ 'x' = "x$file" -o ! -f "$file" ] ; then
     echo -n "$secret" > "$tmp_payload"
     file="$tmp_payload"
   fi
 
-  echo -n "$prefix"
+  case "$scheme" in ssha* | smd5* )
+    if [ 'xx' != "x${salt}x" ] ; then
+      dwarn "Salt: --salt '$salt'"
+      echo -n "$salt"  > "$tmp_salt"
+      sfile="$tmp_salt"
+    elif [ 'x' != "x$sfile" -a -f "$sfile" ] ; then
+      dwarn "Salt: --salt-file '$sfile'"
+    elif [ 'xx' != "x${hash}x" ] ; then
+      dwarn "Salt: from hash"
+      echo -n "$hash" | openssl enc -d -base64 -A | tail -c "+$l" >  "$tmp_salt" # [O]
+     #echo -n "$hash" | openssl enc -d -base64 -A | cut  -b "$l-" >  "$tmp_salt" # [X]
+      sfile="$tmp_salt"
+    else
+      dwarn "Salt: random $srand bytes"
+      openssl rand "$srand" > "$tmp_salt"
+      sfile="$tmp_salt"
+    fi
+    ;;
+  esac
+
+  if [ 'x' != "x$__debug" ] ; then
+    vwarn "file=$file"
+    vwarn "sfile=$sfile"
+  fi
 
   openssl_file2hash(){
     algo="$1" ; shift
@@ -345,13 +347,14 @@ _openssl_slappasswd()
                                  cat - "$sfile" | openssl enc -base64 -A
     fi
   }
+  echo -n "$prefix"
   case "$scheme" in
     ssha* | smd5* ) openssl_file2hash "$algo" "$file" "$sfile" ;;
     *             ) openssl_file2hash "$algo" "$file"          ;;
   esac
 
   rm -f "$tmp_payload" "$tmp_salt"
-  # -> Binary-friendry way
+  # -> Binary-friendly way
 }
 
 result="` _openssl_slappasswd "$_scheme" "$_secret" "$_salt" "$_file" "$_sfile" "$_srand" `" && {
