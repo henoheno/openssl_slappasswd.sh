@@ -61,8 +61,9 @@ usage(){
   qwarn '  {SSHA256}10/w7o2juYBrGMh32/KbveULW9jk2tejpyUAD+uC6PE= # random salt'
   qwarn "  $ $ckname --secret pass --scheme ssha256 --salt 'foobar' # specify salt from --salt"
   qwarn '  {SSHA256}Yuz0lZnd9xxLQhxgOSuV8b4GlTzeOWKriq9ay51aoLxmb29iYXI='
-  qwarn "  $ $ckname --secret pass --scheme '{SSHA256}Yuz0lZnd9xxLQhxgOSuV8b4GlTzeOWKriq9ay51aoLxmb29iYXI='"
-  qwarn '  {SSHA256}Yuz0lZnd9xxLQhxgOSuV8b4GlTzeOWKriq9ay51aoLxmb29iYXI= # specify salt from data, verify OK'
+  qwarn "  $ $ckname --secret pass --scheme '{SSHA256}Yuz0lZnd9xxLQhxgOSuV8b4GlTzeOWKriq9ay51aoLxmb29iYXI=' && echo OK"
+  qwarn '  {SSHA256}Yuz0lZnd9xxLQhxgOSuV8b4GlTzeOWKriq9ay51aoLxmb29iYXI='
+  qwarn "  OK"
   qwarn ; return 1
 }
 

@@ -23,7 +23,7 @@ Usage: openssl_slappasswd.sh [-h|--scheme scheme]
         specify salt text for smd5, ssha, ssha256, ssha384, ssha512
   --salt-file 'filepath'
         use entire file content for salt
-  --salt-random N
+  --salt-random N|NN|NNN|NNNN
         specify random salt length (default:8 bytes)
   --scheme '{SCHEME}base64-encoded-hash-and-salt'
         specify salt
@@ -40,6 +40,7 @@ Examples:
   {SSHA256}10/w7o2juYBrGMh32/KbveULW9jk2tejpyUAD+uC6PE= # random salt
   $ openssl_slappasswd.sh --secret pass --scheme ssha256 --salt 'foobar' # specify salt from --salt
   {SSHA256}Yuz0lZnd9xxLQhxgOSuV8b4GlTzeOWKriq9ay51aoLxmb29iYXI=
-  $ openssl_slappasswd.sh --secret pass --scheme '{SSHA256}Yuz0lZnd9xxLQhxgOSuV8b4GlTzeOWKriq9ay51aoLxmb29iYXI='
-  {SSHA256}Yuz0lZnd9xxLQhxgOSuV8b4GlTzeOWKriq9ay51aoLxmb29iYXI= # specify salt from data, verify OK
+  $ openssl_slappasswd.sh --secret pass --scheme '{SSHA256}Yuz0lZnd9xxLQhxgOSuV8b4GlTzeOWKriq9ay51aoLxmb29iYXI=' && echo OK
+  {SSHA256}Yuz0lZnd9xxLQhxgOSuV8b4GlTzeOWKriq9ay51aoLxmb29iYXI=
+  OK
 
