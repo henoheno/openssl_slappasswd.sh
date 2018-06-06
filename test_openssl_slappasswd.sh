@@ -18,6 +18,7 @@ asserequals()
 
 # ----------------------------------------
 title='Exclusive options: Salt from'
+
 command="./openssl_slappasswd.sh --debug --scheme smd5 --secret s"
 asserequals "$title" '--salt' \
   "` $command --salt-file ./README.txt --salt-random 1 --salt s 2>&1 | grep Salt: | cut -d ' ' -f 3 `"
@@ -32,6 +33,8 @@ asserequals "$title" '--salt-file' \
   "` $command --scheme '{SMD5}' --salt-random 1 --salt s --salt-file ./README.txt 2>&1 | grep Salt: | cut -d ' ' -f 3 `"
 
 # ----------------------------------------
+# Hash verifications
+
 _test()
 {
   scheme="$1"
