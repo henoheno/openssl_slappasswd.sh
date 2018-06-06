@@ -24,11 +24,12 @@ _test()
   ./openssl_slappasswd.sh --debug --scheme smd5 --secret s "$@" 2>&1 |
      grep Salt: | cut -d ' ' -f 3
 }
-assertequals "$title" '--salt'        "` _test --salt-file ./README.txt --salt-random 1 --salt s `"
-assertequals "$title" '--salt-random' "` _test --salt s --salt-file ./README.txt --salt-random 1 `"
-assertequals "$title" '--salt-file'   "` _test --salt-random 1 --salt s --salt-file ./README.txt `"
-assertequals "$title" '--scheme'      "` _test --scheme '{SMD5}hash' --salt-file ./README.txt --salt-random 1 --salt s `"
-assertequals "$title" '--salt'        "` _test --scheme '{SMD5}'     --salt-file ./README.txt --salt-random 1 --salt s `"
+base="--salt-file ./README.txt --salt-random 1 --salt salt"
+assertequals "$title" '--salt'        "` _test $base --salt salt `"
+assertequals "$title" '--salt-random' "` _test $base --salt-random 1 `"
+assertequals "$title" '--salt-file'   "` _test $base --salt-file ./README.txt `"
+assertequals "$title" '--scheme'      "` _test --scheme '{SMD5}hash' $base `"
+assertequals "$title" '--salt'        "` _test --scheme '{SMD5}'     $base `"
 
 # ----------------------------------------
 # Hash verifications
