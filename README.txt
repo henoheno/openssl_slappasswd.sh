@@ -40,7 +40,11 @@ Examples:
   {SSHA256}10/w7o2juYBrGMh32/KbveULW9jk2tejpyUAD+uC6PE= # random salt
   $ openssl_slappasswd.sh --secret pass --scheme ssha256 --salt 'foobar' # specify salt from --salt
   {SSHA256}Yuz0lZnd9xxLQhxgOSuV8b4GlTzeOWKriq9ay51aoLxmb29iYXI=
-  $ openssl_slappasswd.sh --secret pass --scheme '{SSHA256}Yuz0lZnd9xxLQhxgOSuV8b4GlTzeOWKriq9ay51aoLxmb29iYXI=' && echo OK
+  $ userPassword='{SSHA256}Yuz0lZnd9xxLQhxgOSuV8b4GlTzeOWKriq9ay51aoLxmb29iYXI='
+  $ openssl_slappasswd.sh --secret pass  --scheme "$userPassword" && echo OK
   {SSHA256}Yuz0lZnd9xxLQhxgOSuV8b4GlTzeOWKriq9ay51aoLxmb29iYXI=
   OK
+  $ openssl_slappasswd.sh --secret WRONG --scheme "$userPassword" || echo NG
+  {SSHA256}OlNVHPhhfEcyhyVnMvM3WJuMLi8ogLZJAYpqPThS+/Zmb29iYXI=
+  NG
 
