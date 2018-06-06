@@ -22,10 +22,10 @@ usage(){
    warn "$ckname -- OpenLDAP slappasswd(with pw-sha2)-compatible"
    warn 'hash generator and checker, only with openssl and shellscript'
   qwarn
-  qwarn "Usage: $ckname [-h|--scheme scheme]"
+  qwarn "Usage: $ckname [-n] [-h|--scheme scheme]"
   qwarn '       [-s|--secret secret]        [--salt salt]'
   qwarn '       [-T|--secret-file filepath] [--salt-file filepath]'
-  qwarn '       [--salt-random N] [-n]'
+  qwarn '                                   [--salt-random N]'
   qwarn
   qwarn "  -h 'scheme', --scheme 'scheme'"
   qwarn '        scheme(password hash scheme):'
@@ -40,14 +40,14 @@ usage(){
   qwarn "  -T 'filepath', --secret-file 'filepath'"
   qwarn '        use entire file content for secret'
   qwarn
-  qwarn "  --salt 'salt'"
-  qwarn '        specify salt text for smd5, ssha, ssha256, ssha384, ssha512'
-  qwarn "  --salt-file 'filepath'"
-  qwarn '        use entire file content for salt'
   qwarn '  --salt-random N|NN|NNN|NNNN'
   qwarn '        specify random salt length (default:8 bytes)'
+  qwarn "  --salt 'salt'"
+  qwarn '        specify salt text'
+  qwarn "  --salt-file 'filepath'"
+  qwarn '        use entire file content for salt'
   qwarn "  --scheme '{SCHEME}base64-encoded-hash-and-salt'"
-  qwarn '        specify salt'
+  qwarn '        specify salt from userPassword'
   qwarn
   qwarn '  -n    omit trailing newline'
   qwarn
@@ -57,9 +57,9 @@ usage(){
   qwarn "        with the secret and salt"
   qwarn
   qwarn 'Examples:'
-  qwarn "  $ $ckname --secret pass --scheme ssha256"
+  qwarn "  $ $ckname --secret pass"
   qwarn '  {SSHA256}10/w7o2juYBrGMh32/KbveULW9jk2tejpyUAD+uC6PE= # random salt'
-  qwarn "  $ $ckname --secret pass --scheme ssha256 --salt 'foobar' # specify salt from --salt"
+  qwarn "  $ $ckname --secret pass --salt 'foobar' # specify salt from --salt"
   qwarn '  {SSHA256}Yuz0lZnd9xxLQhxgOSuV8b4GlTzeOWKriq9ay51aoLxmb29iYXI='
   qwarn "  $ userPassword='{SSHA256}Yuz0lZnd9xxLQhxgOSuV8b4GlTzeOWKriq9ay51aoLxmb29iYXI='"
   qwarn "  $ $ckname --scheme \"\$userPassword\" --secret pass  && echo OK"
