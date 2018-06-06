@@ -4,7 +4,7 @@
 
 # ----------------------------------------
 
-asserequals()
+assertequals()
 {
   title="$1"
   expected="$2"
@@ -19,18 +19,15 @@ asserequals()
 # ----------------------------------------
 title='Exclusive options: Salt from'
 
-command="./openssl_slappasswd.sh --debug --scheme smd5 --secret s"
-asserequals "$title" '--salt' \
-  "` $command --salt-file ./README.txt --salt-random 1 --salt s 2>&1 | grep Salt: | cut -d ' ' -f 3 `"
-asserequals "$title" '--salt-random' \
-  "` $command --salt s --salt-file ./README.txt --salt-random 1 2>&1 | grep Salt: | cut -d ' ' -f 3 `"
-asserequals "$title" '--salt-file' \
-  "` $command --salt-random 1 --salt s --salt-file ./README.txt 2>&1 | grep Salt: | cut -d ' ' -f 3 `"
-
-asserequals "$title" '--scheme' \
-  "` $command --scheme '{SMD5}!' --salt-random 1 --salt s --salt-file ./README.txt 2>&1 | grep Salt: | cut -d ' ' -f 3 `"
-asserequals "$title" '--salt-file' \
-  "` $command --scheme '{SMD5}' --salt-random 1 --salt s --salt-file ./README.txt 2>&1 | grep Salt: | cut -d ' ' -f 3 `"
+_test()
+{
+  ./openssl_slappasswd.sh --debug --scheme smd5 --secret s "$@" 2>&1 |
+     grep Salt: | cut -d ' ' -f 3
+}
+assertequals "$title" '--salt'        "` _test --salt-file ./README.txt --salt-random 1 --salt s `"
+assertequals "$title" '--salt-random' "` _test --salt s --salt-file ./README.txt --salt-random 1 `"
+assertequals "$title" '--salt-file'   "` _test --salt-random 1 --salt s --salt-file ./README.txt `"
+assertequals "$title" '--scheme' "` _test --scheme '{SMD5}h' --salt-random 1 --salt s --salt-file ./README.txt `"
 
 # ----------------------------------------
 # Hash verifications
@@ -38,7 +35,7 @@ asserequals "$title" '--salt-file' \
 _test()
 {
   scheme="$1"
-  asserequals "$title" "$scheme" \
+  assertequals "$title" "$scheme" \
     "` ./openssl_slappasswd.sh --secret "$secret" --scheme "$scheme" -n `"
 }
 
@@ -55,11 +52,6 @@ _test '{SHA512}vSsar3708Jvp9Szi2NWZZ02Bqp1qRCFpbcTZPdBhnWgs5WtNZKnvCXdhztmeD2cmW
 _test '{SHA384}WKd1ukESvjAFrkQHznV9iP2nHUBJe7gCbsrFTU4//HIyzo3jq1rLMK45dg/ufFPt'
 _test '{SHA256}K7gNU3sdo+OL0wNhqoVWhr3g6s1xYv72ol/pe/Unols='
 
-# CentOS 7
-# $ alias slappasswd="slappasswd -o module-path=/usr/lib64/openldap -o module-load=pw-sha2"
-# $ slappasswd -h '{SSHA256}' -s slappasswd-original # random salt
-# $ slappasswd -h '{SSHA384}' -s slappasswd-original # random salt
-# $ slappasswd -h '{SSHA512}' -s slappasswd-original # random salt
 title=slappasswd-static
 secret=slappasswd-static
 _test '{MD5}9f8PcTTi+T+5ub5eX9R6JQ=='
@@ -72,9 +64,10 @@ _test '{SHA512}pnvx1FlNK39PbQ7un1LRu3zeiuN3NaS/3zKxumpoiFS5S4m5AKcqDrTKtx0j/Ado6
 _test '{SSHA256}XKnGee0csI1FNLTZdIjhXgLR690UJv9XSfVozYQLgRIfHbi5EkrPaA=='
 _test '{SSHA384}lqwDJ57bh4yXnb7ED+l2mS74Vm8PgJZK1VlcUi7CypJLujqwFjpvqNdQTpttPJ0wrW4JbsugjuI='
 _test '{SSHA512}sQMko4CUJKuwQyY9cqJdghty4GdsZXJGniXa/aIu67ACT1k49xuXqkMXvO8cE5VpfmB8Be073gKbc/4/KhXlinzFVlNtgNRx'
+
 title=slappasswd-dynamic
 secret=slappasswd-dynamic
-alias slappasswd="slappasswd -o module-path=/usr/lib64/openldap -o module-load=pw-sha2"
+alias slappasswd="slappasswd -o module-path=/usr/lib64/openldap -o module-load=pw-sha2" # CentOS 7
 _test "` slappasswd -h '{MD5}'     -s "$secret" `"
 _test "` slappasswd -h '{SMD5}'    -s "$secret" `"
 _test "` slappasswd -h '{SSHA}'    -s "$secret" `"
