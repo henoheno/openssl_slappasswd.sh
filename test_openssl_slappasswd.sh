@@ -27,7 +27,8 @@ _test()
 assertequals "$title" '--salt'        "` _test --salt-file ./README.txt --salt-random 1 --salt s `"
 assertequals "$title" '--salt-random' "` _test --salt s --salt-file ./README.txt --salt-random 1 `"
 assertequals "$title" '--salt-file'   "` _test --salt-random 1 --salt s --salt-file ./README.txt `"
-assertequals "$title" '--scheme' "` _test --scheme '{SMD5}h' --salt-random 1 --salt s --salt-file ./README.txt `"
+assertequals "$title" '--scheme' "` _test --scheme '{SMD5}h' --salt-file ./README.txt --salt-random 1 --salt s `"
+assertequals "$title" '--salt'   "` _test --scheme '{SMD5}'  --salt-file ./README.txt --salt-random 1 --salt s `"
 
 # ----------------------------------------
 # Hash verifications
