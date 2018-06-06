@@ -1,10 +1,10 @@
 openssl_slappasswd.sh -- OpenLDAP slappasswd(with pw-sha2)-compatible
 hash generator and checker, only with openssl and shellscript
 
-Usage: openssl_slappasswd.sh [-h|--scheme scheme]
+Usage: openssl_slappasswd.sh [-n] [-h|--scheme scheme]
        [-s|--secret secret]        [--salt salt]
        [-T|--secret-file filepath] [--salt-file filepath]
-       [--salt-random N] [-n]
+                                   [--salt-random N]
 
   -h 'scheme', --scheme 'scheme'
         scheme(password hash scheme):
@@ -19,14 +19,14 @@ Usage: openssl_slappasswd.sh [-h|--scheme scheme]
   -T 'filepath', --secret-file 'filepath'
         use entire file content for secret
 
-  --salt 'salt'
-        specify salt text for smd5, ssha, ssha256, ssha384, ssha512
-  --salt-file 'filepath'
-        use entire file content for salt
   --salt-random N|NN|NNN|NNNN
         specify random salt length (default:8 bytes)
+  --salt 'salt'
+        specify salt text
+  --salt-file 'filepath'
+        use entire file content for salt
   --scheme '{SCHEME}base64-encoded-hash-and-salt'
-        specify salt
+        specify salt from userPassword
 
   -n    omit trailing newline
 
@@ -36,9 +36,9 @@ Usage: openssl_slappasswd.sh [-h|--scheme scheme]
         with the secret and salt
 
 Examples:
-  $ openssl_slappasswd.sh --secret pass --scheme ssha256
+  $ openssl_slappasswd.sh --secret pass
   {SSHA256}10/w7o2juYBrGMh32/KbveULW9jk2tejpyUAD+uC6PE= # random salt
-  $ openssl_slappasswd.sh --secret pass --scheme ssha256 --salt 'foobar' # specify salt from --salt
+  $ openssl_slappasswd.sh --secret pass --salt 'foobar' # specify salt from --salt
   {SSHA256}Yuz0lZnd9xxLQhxgOSuV8b4GlTzeOWKriq9ay51aoLxmb29iYXI=
   $ userPassword='{SSHA256}Yuz0lZnd9xxLQhxgOSuV8b4GlTzeOWKriq9ay51aoLxmb29iYXI='
   $ openssl_slappasswd.sh --scheme "$userPassword" --secret pass  && echo OK
