@@ -209,9 +209,11 @@ while [ $# -gt 0 ] ; do
    _*      ) shift ;; ## Preparsed or NOP
 
    ## Commands
-   [1-3]     ) shift $ch ;;
-   exit      ) exit      ;;
-   exit1     ) exit 1    ;;
+   1       ) shift ;;
+   2       ) shift ; shift ;;         # shift 2&1
+   3       ) shift ; shift ; shift ;; # shift 3&2&1
+   exit    ) exit      ;;
+   exit1   ) exit 1    ;;
    * )
       if [ -z "$__help" ]
       then err "Unknown command \"$1\""
