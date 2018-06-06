@@ -1,7 +1,7 @@
 openssl_slappasswd.sh -- OpenLDAP slappasswd(with pw-sha2)-compatible
 hash generator and checker, only with openssl and shellscript
 
-Usage: openssl_slappasswd.sh [-n] [-h|--scheme scheme]
+Usage: openssl_slappasswd.sh [-n] [-q|--quiet] [-h|--scheme scheme]
        [-s|--secret secret]        [--salt salt]
        [-T|--secret-file filepath] [--salt-file filepath]
                                    [--salt-random N]
@@ -29,6 +29,8 @@ Usage: openssl_slappasswd.sh [-n] [-h|--scheme scheme]
         specify salt from userPassword
 
   -n    omit trailing newline
+  -q, --quiet
+        omit output userPassword etc.
 
   -h       '{SCHEME}base64-encoded-hash-and-salt',
   --scheme '{SCHEME}base64-encoded-hash-and-salt'
@@ -41,10 +43,8 @@ Examples:
   $ openssl_slappasswd.sh --secret pass --salt 'foobar' # specify salt from --salt
   {SSHA256}Yuz0lZnd9xxLQhxgOSuV8b4GlTzeOWKriq9ay51aoLxmb29iYXI=
   $ userPassword='{SSHA256}Yuz0lZnd9xxLQhxgOSuV8b4GlTzeOWKriq9ay51aoLxmb29iYXI='
-  $ openssl_slappasswd.sh --scheme "$userPassword" --secret pass  && echo OK
-  {SSHA256}Yuz0lZnd9xxLQhxgOSuV8b4GlTzeOWKriq9ay51aoLxmb29iYXI=
+  $ openssl_slappasswd.sh --quiet --scheme "$userPassword" --secret pass  && echo OK
   OK
-  $ openssl_slappasswd.sh --scheme "$userPassword" --secret WRONG || echo NG
-  {SSHA256}OlNVHPhhfEcyhyVnMvM3WJuMLi8ogLZJAYpqPThS+/Zmb29iYXI=
+  $ openssl_slappasswd.sh --quiet --scheme "$userPassword" --secret WRONG || echo NG
   NG
 
