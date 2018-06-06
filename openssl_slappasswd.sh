@@ -22,7 +22,7 @@ usage(){
    warn "$ckname -- OpenLDAP slappasswd(with pw-sha2)-compatible"
    warn 'hash generator and checker, only with openssl and shellscript'
   qwarn
-  qwarn "Usage: $ckname [-n] [-h|--scheme scheme]"
+  qwarn "Usage: $ckname [-n] [-q|--quiet] [-h|--scheme scheme]"
   qwarn '       [-s|--secret secret]        [--salt salt]'
   qwarn '       [-T|--secret-file filepath] [--salt-file filepath]'
   qwarn '                                   [--salt-random N]'
@@ -50,6 +50,8 @@ usage(){
   qwarn '        specify salt from userPassword'
   qwarn
   qwarn '  -n    omit trailing newline'
+  qwarn '  -q, --quiet'
+  qwarn '        omit output userPassword etc.'
   qwarn
   qwarn "  -h       '{SCHEME}base64-encoded-hash-and-salt',"
   qwarn "  --scheme '{SCHEME}base64-encoded-hash-and-salt'"
@@ -62,11 +64,9 @@ usage(){
   qwarn "  $ $ckname --secret pass --salt 'foobar' # specify salt from --salt"
   qwarn '  {SSHA256}Yuz0lZnd9xxLQhxgOSuV8b4GlTzeOWKriq9ay51aoLxmb29iYXI='
   qwarn "  $ userPassword='{SSHA256}Yuz0lZnd9xxLQhxgOSuV8b4GlTzeOWKriq9ay51aoLxmb29iYXI='"
-  qwarn "  $ $ckname --scheme \"\$userPassword\" --secret pass  && echo OK"
-  qwarn '  {SSHA256}Yuz0lZnd9xxLQhxgOSuV8b4GlTzeOWKriq9ay51aoLxmb29iYXI='
+  qwarn "  $ $ckname --quiet --scheme \"\$userPassword\" --secret pass  && echo OK"
   qwarn "  OK"
-  qwarn "  $ $ckname --scheme \"\$userPassword\" --secret WRONG || echo NG"
-  qwarn '  {SSHA256}OlNVHPhhfEcyhyVnMvM3WJuMLi8ogLZJAYpqPThS+/Zmb29iYXI='
+  qwarn "  $ $ckname --quiet --scheme \"\$userPassword\" --secret WRONG || echo NG"
   qwarn "  NG"
   qwarn ; return 1
 }
@@ -369,9 +369,11 @@ _openssl_slappasswd()
 }
 
 result="` _openssl_slappasswd "$_scheme" "$_secret" "$_salt" "$_file" "$_sfile" "$_srand" `" && {
-  if [ "$__nonewline" ]
-    then echo -n "$result"
-    else echo    "$result"
+  if [ ! "$__quiet" ] ; then
+    if [ "$__nonewline" ]
+      then echo -n "$result"
+      else echo    "$result"
+    fi
   fi
   test "x$_scheme" = "x$result"
 }

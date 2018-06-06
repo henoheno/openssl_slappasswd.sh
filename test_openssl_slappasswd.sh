@@ -21,7 +21,7 @@ title='Exclusive options: Secret from'
 
 _test()
 {
-  ./openssl_slappasswd.sh --debug --scheme md5 --secret s "$@" 2>&1 |
+  ./openssl_slappasswd.sh --debug -q --scheme md5 --secret s "$@" 2>&1 |
      grep Secret: | cut -d ' ' -f 3
 }
 base="--secret-file ./README.txt --secret secret"
@@ -33,7 +33,7 @@ title='Exclusive options: Salt from'
 
 _test()
 {
-  ./openssl_slappasswd.sh --debug --scheme smd5 --secret s "$@" 2>&1 |
+  ./openssl_slappasswd.sh --debug -q --scheme smd5 --secret s "$@" 2>&1 |
      grep Salt: | cut -d ' ' -f 3
 }
 base="--salt-file ./README.txt --salt-random 1 --salt salt"
