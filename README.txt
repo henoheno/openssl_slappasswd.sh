@@ -41,10 +41,10 @@ Examples:
   $ openssl_slappasswd.sh --secret pass --scheme ssha256 --salt 'foobar' # specify salt from --salt
   {SSHA256}Yuz0lZnd9xxLQhxgOSuV8b4GlTzeOWKriq9ay51aoLxmb29iYXI=
   $ userPassword='{SSHA256}Yuz0lZnd9xxLQhxgOSuV8b4GlTzeOWKriq9ay51aoLxmb29iYXI='
-  $ openssl_slappasswd.sh --secret pass  --scheme "$userPassword" && echo OK
+  $ openssl_slappasswd.sh --scheme "$userPassword" --secret pass  && echo OK
   {SSHA256}Yuz0lZnd9xxLQhxgOSuV8b4GlTzeOWKriq9ay51aoLxmb29iYXI=
   OK
-  $ openssl_slappasswd.sh --secret WRONG --scheme "$userPassword" || echo NG
+  $ openssl_slappasswd.sh --scheme "$userPassword" --secret WRONG || echo NG
   {SSHA256}OlNVHPhhfEcyhyVnMvM3WJuMLi8ogLZJAYpqPThS+/Zmb29iYXI=
   NG
 
