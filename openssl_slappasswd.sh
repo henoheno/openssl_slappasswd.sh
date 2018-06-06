@@ -68,6 +68,10 @@ usage(){
   qwarn "  OK"
   qwarn "  $ $ckname --quiet --scheme \"\$userPassword\" --secret WRONG || echo NG"
   qwarn "  NG"
+  qwarn "  $ $ckname --secret-file ./empty  --salt-file ./empty --scheme sha256"
+  qwarn '  {SHA256}47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU='
+  qwarn "  $ $ckname --secret-file ./empty  --salt-file ./empty --scheme ssha256"
+  qwarn '  {SSHA256}47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU='
   qwarn ; return 1
 }
 

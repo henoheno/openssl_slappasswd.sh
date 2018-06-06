@@ -47,4 +47,8 @@ Examples:
   OK
   $ openssl_slappasswd.sh --quiet --scheme "$userPassword" --secret WRONG || echo NG
   NG
+  $ openssl_slappasswd.sh --secret-file ./empty  --salt-file ./empty --scheme sha256
+  {SHA256}47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=
+  $ openssl_slappasswd.sh --secret-file ./empty  --salt-file ./empty --scheme ssha256
+  {SSHA256}47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=
 
